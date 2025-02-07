@@ -8,8 +8,10 @@ import (
 	"platform-service/internal/database"
 	"platform-service/internal/handlers"
 	internal_middleware "platform-service/internal/middleware"
+	"platform-service/internal/utils"
 	"time"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/otel"
@@ -93,10 +95,14 @@ func main() {
 	e.POST("/register", handlers.Register)
 	e.POST("/login", handlers.Login)
 
-	e.GET("/protected", func(c echo.Context) error {
+	r := e.Group("/api")
+	r.Use(echojwt.WithConfig(utils.JWTConfig()))
+
+	r.GET("/protected", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"message": "You are authenticated"})
 	}, internal_middleware.AuthMiddleware)
-	e.GET("/metrics", handlers.GetMetricsHandler(metricsMiddleware), internal_middleware.AdminAuthMiddleware)
+
+	r.GET("/metrics", handlers.GetMetricsHandler(metricsMiddleware), internal_middleware.AdminAuthMiddleware)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

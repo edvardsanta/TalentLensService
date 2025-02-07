@@ -19,7 +19,6 @@ type RegisterRequest struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	ProfileImage string `json:"profile_image"`
-	Role         string `json:"role"`
 }
 
 type LoginRequest struct {
@@ -73,7 +72,7 @@ func Register(c echo.Context) error {
 		FirstName:    req.FirstName,
 		LastName:     req.LastName,
 		ProfileImage: req.ProfileImage,
-		Role:         req.Role,
+		Role:         "user",
 		Status:       "active",
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
