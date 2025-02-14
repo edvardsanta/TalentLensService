@@ -26,7 +26,7 @@ func GenerateKeyID(secret []byte) string {
 	return hex.EncodeToString(hash[:8])
 }
 
-func GenerateJWT(userID uint, username string, role string, expiredAt time.Time) (string, error) {
+func GenerateJWT(userID string, username string, role string, expiredAt time.Time) (string, error) {
 	claims := &models.JwtCustomClaims{
 		UserID:   userID,
 		Username: username,

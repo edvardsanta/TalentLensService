@@ -7,6 +7,7 @@ import (
 	"platform-service/internal/utils"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -77,6 +78,7 @@ func Register(c echo.Context) error {
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		LastIP:       c.RealIP(),
+		UID:          uuid.NewString(),
 	}
 
 	tx := database.DB.Begin()
@@ -95,7 +97,7 @@ func Register(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"message": "User registered successfully",
-		"userId":  user.ID,
+		"userId":  user.UID,
 	})
 }
 
@@ -120,8 +122,8 @@ func Login(c echo.Context) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(user.Password)); err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid credentials"})
 	}
-	expiredAt := time.Now().Add(time.Minute * 30)
-	token, err := utils.GenerateJWT(storedUser.ID, storedUser.Username, storedUser.Role, expiredAt)
+	expiredAt := time.Now().Add(time.Hour * 24)
+	token, err := utils.GenerateJWT(storedUser.UID, storedUser.Username, storedUser.Role, expiredAt)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate token"})
 	}
@@ -131,6 +133,6 @@ func Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token": token,
-		"user":  storedUser,
+		"user":  storedUser.ToSafeUser(),
 	})
 }

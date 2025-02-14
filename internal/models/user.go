@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
+	UID          string    `gorm:"type:char(36);uniqueIndex;not null" json:"uid"`
 	Username     string    `gorm:"uniqueIndex;not null;size:50"`
 	Password     string    `gorm:"not null"`
 	Email        string    `gorm:"uniqueIndex;not null"`
@@ -25,7 +26,20 @@ type User struct {
 	CreatedAt    time.Time `gorm:"default:current_timestamp"`
 	UpdatedAt    time.Time `gorm:"default:current_timestamp"`
 }
-
+type SafeUser struct {
+	UID          string    `json:"uid"`
+	Username     string    `json:"username"`
+	Email        string    `json:"email"`
+	FirstName    string    `json:"firstName,omitempty"`
+	LastName     string    `json:"lastName,omitempty"`
+	Role         string    `json:"role"`
+	Status       string    `json:"status"`
+	LastLogin    time.Time `json:"lastLogin"`
+	LoginCount   int       `json:"loginCount"`
+	ProfileImage string    `json:"profileImage,omitempty"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
 type JSON map[string]interface{}
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -65,4 +79,21 @@ func (u *User) IsAdmin() bool {
 
 func (u *User) SetStatus(status string) {
 	u.Status = status
+}
+
+func (u *User) ToSafeUser() SafeUser {
+	return SafeUser{
+		UID:          u.UID,
+		Username:     u.Username,
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Role:         u.Role,
+		Status:       u.Status,
+		LastLogin:    u.LastLogin,
+		LoginCount:   u.LoginCount,
+		ProfileImage: u.ProfileImage,
+		CreatedAt:    u.CreatedAt,
+		UpdatedAt:    u.UpdatedAt,
+	}
 }
